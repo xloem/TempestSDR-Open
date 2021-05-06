@@ -25,8 +25,7 @@ endif
 all :
 	@$(MAKE) -C TSDRPlugin_RawFile/ all JAVA_HOME=$(JAVA_HOME)
 ifeq ($(OSNAME),WINDOWS)
-	@$(MAKE) -C TSDRPlugin_Mirics/ all MIRICS_HOME=$(MIRICS_HOME)
-	@$(MAKE) -C TSDRPlugin_ExtIO/ all MIRICS_HOME=$(MIRICS_HOME)
+	@$(MAKE) -C TSDRPlugin_ExtIO/ all
 endif
 	@$(MAKE) -C TempestSDR/ all
 	@$(MAKE) -C JavaGUI/ all
@@ -36,5 +35,6 @@ clean :
 	@$(MAKE) -C TSDRPlugin_RawFile/ clean
 	@$(MAKE) -C TSDRPlugin_Mirics/ clean
 	@$(MAKE) -C TSDRPlugin_ExtIO/ clean
+	@$(MAKE) -C TSDRPlugin_SDRPlay/ clean
 	@$(MAKE) -C TempestSDR/ clean
 	@$(MAKE) -C JavaGUI/ clean

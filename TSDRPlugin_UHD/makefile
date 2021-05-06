@@ -51,6 +51,7 @@ ifeq ($(OS),Windows_NT)
 else ifeq ($(shell uname -s),Darwin)
 	OSNAME ?= MAC
 	EXT ?= .so
+	INC += /opt/local/include
 	ifeq ($(shell uname -m),x86)
 		ARCHNAME = X86
 	endif
@@ -70,14 +71,14 @@ else
 
 	ifndef $(ARCHNAME)
 
-		UNAME_P := $(shell uname -p)
-		ifeq ($(UNAME_P),x86_64)
+		UNAME_M := $(shell uname -m)
+		ifeq ($(UNAME_M),x86_64)
 			ARCHNAME = X64
 		endif
-		ifneq ($(filter %86,$(UNAME_P)),)
+		ifneq ($(filter %86,$(UNAME_M)),)
 			ARCHNAME = X86
 		endif
-		ifneq ($(filter arm%,$(UNAME_P)),)
+		ifneq ($(filter arm%,$(UNAME_M)),)
 			ARCHNAME = ARM
 		endif
 
@@ -111,7 +112,7 @@ ifeq ($(OSNAME),LINUX)
 	LIBRARIES+=-lboost_thread -lboost_program_options -luhd
 else ifeq ($(OSNAME),MAC)
 	CXXFLAGS+=-fPIC
-	LIBRARIES+=-lboost_thread-mt -lboost_program_options-mt -lboost_system-mt -luhd
+	LIBRARIES+=-L/opt/local/lib -lboost_thread-mt -lboost_program_options-mt -lboost_system-mt -luhd
 else ifeq ($(OSNAME),WINDOWS)
 	LDFLAGS+=-Wl,--add-stdcall-alias
 	LIBRARIES+= -lboost_thread-mt -lboost_program_options-mt -lboost_system-mt -luhd 
@@ -150,7 +151,7 @@ endif
 $(OBJFOLDER)/%.o : $(SOURCEFOLDER)/%.cpp
 	mkdir -p $(OUTPUTFOLDER)
 	mkdir -p $(OBJFOLDER)
-	$(GPP) $(INC) $(CXXFLAGS) $(DEBUGFLAGS) $(COMPILATION_TYPE) -c $< -o $@
+	$(GPP) $(foreach d, $(INC), -I$d) $(CXXFLAGS) $(DEBUGFLAGS) $(COMPILATION_TYPE) -c $< -o $@
 
 .PHONY: clean
 

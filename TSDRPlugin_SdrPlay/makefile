@@ -10,7 +10,7 @@
 #-------------------------------------------------------------------------------
 # This makefile should work for all plugins that reside in the root directory of the repository.
 # The header file is copied over from the source
-PLUGNAME=TSDRPlugin_Mirics
+PLUGNAME=TSDRPlugin_SDRPlay
 
 # Dependencies
 OBJS=$(PLUGNAME).o
@@ -22,9 +22,6 @@ ifeq ($(BUILD_TYPE),Debug)
 else
 	CFLAGS+=-O3
 endif
-
-# Headers
-INC += "$(MIRICS_HOME)/API/inc"
 
 # END OF CONFIGURATION IF STANDARD DIR STRUCTURE IS USED
 
@@ -45,6 +42,15 @@ ifeq ($(OS),Windows_NT)
 			ARCHNAME = X86
 		endif
 	
+	endif
+else ifeq ($(shell uname -s),Darwin)
+	OSNAME ?= MAC
+	INC += /opt/local/include
+	ifeq ($(shell uname -m),x86)
+		ARCHNAME = X86
+	endif
+	ifeq ($(shell uname -m),x86_64)
+		ARCHNAME = X64
 	endif
 else
 
@@ -73,21 +79,29 @@ else
 	endif
 endif
 
-ifeq ($(OSNAME),WINDOWS)
-	EXT=.dll
-	LIBPREFIX=
-endif
-ifeq ($(OSNAME),LINUX)
-	EXT=.so
-	LIBPREFIX=lib
-endif
-
 ifeq ($(ARCHNAME),X86)
 	COMPILATION_TYPE=-m32
 	ARCHNAME_LOWER=x86
 else ifeq ($(ARCHNAME),X64)
 	COMPILATION_TYPE=-m64
 	ARCHNAME_LOWER=x64
+endif
+
+ifeq ($(OSNAME),WINDOWS)
+	LDFLAGS+=-Wl,--add-stdcall-alias
+	EXT=.dll
+	LIBPREFIX=
+	SDRPLAY_HOME?=C:/PROGRA~1/SDRplay
+	INC += "$(SDRPLAY_HOME)/API/inc"
+	LIBRARIES=-L"$(SDRPLAY_HOME)/API/$(ARCHNAME_LOWER)/" -lmir_sdr_api
+else ifeq ($(OSNAME),MAC)
+	EXT ?= .so
+	CXXFLAGS+=-fPIC
+	LIBRARIES=-lmirsdrapi-rsp
+else ifeq ($(OSNAME),LINUX)
+	EXT=.so
+	LIBPREFIX=lib
+	LIBRARIES=-lmirsdrapi-rsp
 endif
 
 
@@ -100,9 +114,6 @@ OBJFOLDER=obj
 _OBJS = $(patsubst %,$(OBJFOLDER)/%,$(OBJS))
 _DEPS = $(patsubst %,$(SOURCEFOLDER)/%,$(DEPS))
 
-# OS specific flags
-LDFLAGS+=-Wl,--add-stdcall-alias
-
 # Generate the library
 all : $(OUTPUTFOLDER)/$(PLUGNAME)$(EXT)
 
@@ -113,7 +124,7 @@ copyoverheaderfile:
 
 # Link
 $(OUTPUTFOLDER)/$(PLUGNAME)$(EXT): copyoverheaderfile $(_OBJS)
-	$(CC) -Wall -L"$(MIRICS_HOME)/API/$(ARCHNAME_LOWER)/" -lmir_sdr_api $(LDFLAGS) $(DEBUGFLAGS) -shared $(COMPILATION_TYPE) -o $@ $(_OBJS)
+	$(CC) -Wall $(LDFLAGS) $(DEBUGFLAGS) -shared $(COMPILATION_TYPE) -o $@ $(_OBJS) $(LIBRARIES)
 
 # Make dirs and compile
 $(OBJFOLDER)/%.o : $(SOURCEFOLDER)/%.c $(_DEPS)

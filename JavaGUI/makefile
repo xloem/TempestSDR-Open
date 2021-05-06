@@ -46,14 +46,14 @@ else
 
 	ifndef $(ARCHNAME)
 
-		UNAME_P := $(shell uname -p)
-		ifeq ($(UNAME_P),x86_64)
+		UNAME_M := $(shell uname -m)
+		ifeq ($(UNAME_M),x86_64)
 			ARCHNAME = X64
 		endif
-		ifneq ($(filter %86,$(UNAME_P)),)
+		ifneq ($(filter %86,$(UNAME_M)),)
 			ARCHNAME = X86
 		endif
-		ifneq ($(filter arm%,$(UNAME_P)),)
+		ifneq ($(filter arm%,$(UNAME_M)),)
 			ARCHNAME = ARM
 		endif
 
@@ -86,11 +86,11 @@ PLUGINS=TSDRPlugin_RawFile
 
 ifeq ($(OSNAME),WINDOWS)
 # Windows only plugins
-PLUGINS += TSDRPlugin_Mirics TSDRPlugin_ExtIO
+PLUGINS += TSDRPlugin_SDRPlay TSDRPlugin_ExtIO
 else ifeq ($(OSNAME), LINUX)
 PLUGINS += TSDRPlugin_UHD
 else ifeq ($(OSNAME), MAC)
-PLUGINS += TSDRPlugin_UHD
+PLUGINS += TSDRPlugin_UHD TSDRPlugin_SDRPlay
 endif
 
 # USER CONFIGURATION ENDS HERE
